@@ -62,7 +62,7 @@
         var baseHref = $(document).find('base[href]').attr('href') || '/';
 
         // Получение настроек сайта / модуля
-        $.get(baseHref + 'index.php?route=module/saferoute/get_settings', function (settings) {
+        $.get(baseHref + 'index.php?route=extension/module/saferoute/get_settings', function (settings) {
             var lang = 'ru';
             switch (settings.lang) {
                 case 'en': lang = 'en'; break;
@@ -79,7 +79,7 @@
             $safeRouteLabel.after('<div id="' + WIDGET_DOM_ID + '"></div>');
 
             // Получение данных корзины (список товаров, габариты)
-            $.get(baseHref + 'index.php?route=module/saferoute/get_cart', function (cart) {
+            $.get(baseHref + 'index.php?route=extension/module/saferoute/get_cart', function (cart) {
                 // Корзина пуста, виджет запустить нельзя
                 if (!cart.products || !cart.products.length)
                     return alert(messages[lang].cartIsEmpty);
@@ -88,8 +88,9 @@
                 widget = new SafeRouteCartWidget(WIDGET_DOM_ID, {
                     lang: lang,
                     currency: currency,
-                    apiScript: baseHref + 'index.php?route=module/saferoute/widget_api',
-                    mod: 'opencart_2.x',
+                    apiScript: baseHref + 'index.php?route=extension/module/saferoute/widget_api',
+                    mod: 'opencart_3.0',
+
                     discount: cart.discount,
                     products: cart.products,
                     weight: cart.weight,

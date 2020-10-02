@@ -108,8 +108,7 @@ class ModelExtensionShippingSaferoute extends Model
      */
     public function getOrderStatuses()
     {
-        $query = $this->db->query("SELECT * FROM `" . DB_PREFIX . "order_status` 
-        WHERE language_id='" . $this->config->get('config_language_id') . "' ORDER BY name");
+        $query = $this->db->query("SELECT * FROM `" . DB_PREFIX . "order_status` WHERE language_id='" . $this->config->get('config_language_id') . "' ORDER BY name");
 
         $statuses = [];
 

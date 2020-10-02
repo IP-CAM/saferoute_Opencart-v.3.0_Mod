@@ -1,10 +1,8 @@
 <?php
 
-
 require_once DIR_SYSTEM . 'library/saferoute/SafeRouteWidgetApi.php';
 
-
-class ControllerModuleSaferoute extends Controller
+class ControllerExtensionModuleSaferoute extends Controller
 {
     /**
      * Отправляет в браузер данные в формате JSON
@@ -128,8 +126,6 @@ class ControllerModuleSaferoute extends Controller
      */
     public function get_cart()
     {
-//        if (substr(VERSION, 0, 3) !== '2.3') $this->load->model('catalog/product');
-
         $data = [];
 
         // Массив товаров корзины
@@ -159,19 +155,21 @@ class ControllerModuleSaferoute extends Controller
                 'length'     => $dimensions['length'],
             ];
         }
-        if (isset($this->session->data['coupon'])){
-            $total_data = array(
+
+        $data['discount'] = 0;
+        if (isset($this->session->data['coupon']))
+        {
+            $total_data = [
                 'totals' => &$totals,
-                'total'  => &$total
-            );
-            $discount = 0;
+                'total'  => &$total,
+            ];
+
             $total_data['total'] = $this->cart->getTotal();
             $this->load->model('extension/total/coupon');
             $this->model_extension_total_coupon->getTotal($total_data);
-            foreach ($totals as $item) {
-                $discount += abs($item['value']);
-            }
-            $data['discount'] = $discount;
+
+            foreach ($totals as $item)
+                $data['discount'] += abs($item['value']);
         }
 
         $this->sendJSON($data);
@@ -204,7 +202,6 @@ class ControllerModuleSaferoute extends Controller
     {
         // Проверка токена, передаваемого в запросе
         if ($this->checkToken($this->request->server['HTTP_TOKEN']))
-
         {
             $r = $this->request->get['route'];
             // Список статусов заказа

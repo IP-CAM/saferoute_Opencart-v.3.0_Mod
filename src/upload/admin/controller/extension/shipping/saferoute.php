@@ -1,4 +1,5 @@
 <?php
+
 require('saferoute_data/DbModificator.php');
 
 class ControllerExtensionShippingSaferoute extends Controller
@@ -69,7 +70,7 @@ class ControllerExtensionShippingSaferoute extends Controller
             [
                 'text' => $this->language->get( 'text_extensions'),
                 'href' => $this->url->link(
-                   'extension/shipping',
+                   'marketplace/extension',
                     'user_token=' . $this->session->data['user_token'] . '&type=shipping',
                     true
                 ),
