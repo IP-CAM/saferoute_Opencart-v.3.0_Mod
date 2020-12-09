@@ -36,6 +36,18 @@ class DbModificator
             $sql = "ALTER TABLE `".DB_PREFIX."order` ADD `in_saferoute_cabinet` TINYINT(1) DEFAULT 0;";
             $this->controller->db->query($sql);
         }
+
+        if (!$this->fieldOrderExists('saferoute_delivery_company'))
+        {
+            $sql = "ALTER TABLE `".DB_PREFIX."order` ADD `saferoute_delivery_company` VARCHAR(255) NOT NULL;";
+            $this->controller->db->query($sql);
+        }
+
+        if (!$this->fieldOrderExists('saferoute_delivery_type'))
+        {
+            $sql = "ALTER TABLE `".DB_PREFIX."order` ADD `saferoute_delivery_type` TINYINT(1) DEFAULT 0;";
+            $this->controller->db->query($sql);
+        }
     }
 
     public function uninstall()
@@ -51,5 +63,17 @@ class DbModificator
          	$sql = "ALTER TABLE `".DB_PREFIX."order` DROP COLUMN `in_saferoute_cabinet`;";
          	$this->controller->db->query($sql);
          }
+
+        if ($this->fieldOrderExists('saferoute_delivery_company'))
+        {
+            $sql = "ALTER TABLE `".DB_PREFIX."order` DROP COLUMN `saferoute_delivery_company`;";
+            $this->controller->db->query($sql);
+        }
+
+        if ($this->fieldOrderExists('saferoute_delivery_type'))
+        {
+            $sql = "ALTER TABLE `".DB_PREFIX."order` DROP COLUMN `saferoute_delivery_type`;";
+            $this->controller->db->query($sql);
+        }
     }
 }

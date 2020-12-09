@@ -124,8 +124,14 @@ class ModelExtensionShippingSaferoute extends Model
      * @param $orderId int|string ID заказа
      * @return boolean
      */
-    public function onOrderCheckoutSuccess($orderId)
+//    public function onOrderCheckoutSuccess($orderId)
+    public function onOrderCheckoutSuccess($route, $data)
     {
+
+        $logger = new \Log('saferoute.log');
+        $logger->write('onOrderCheckoutSuccess Event fired: ' . $route);
+        var_dump($data);die();
+
         $this->load->model('checkout/order');
 
         if (!isset($_COOKIE['SROrderData']) || !$orderId) return false;
@@ -173,6 +179,12 @@ class ModelExtensionShippingSaferoute extends Model
             // ...и телефон клиента из виджета
             if (isset($sr_widget_data->contacts->phone))
                 $this->updateOrder($orderId, 'telephone', $sr_widget_data->contacts->phone);
+            // ...тип доставки
+            if (isset($sr_widget_data->delivery->type))
+                $this->updateOrder($orderId, 'saferoute_delivery_type', $sr_widget_data->delivery->type);
+            // ...и название компании доставки
+            if (isset($sr_widget_data->delivery->deliveryCompanyName))
+                $this->updateOrder($orderId, 'saferoute_delivery_company', $sr_widget_data->delivery->deliveryCompanyName);
         }
 
         // Получение заказа в CMS
@@ -271,7 +283,7 @@ class ModelExtensionShippingSaferoute extends Model
                         'cost'         => $cost,
                         'tax_class_id' => 0,
                         'saferoute'	   => 'true',
-                        'text'         => '',
+                        'text'         => "$cost ₽",
                     ],
                 ],
                 'sort_order' => $this->config->get('shipping_saferoute_sort_order'),

@@ -41,4 +41,31 @@
 			]]></add>
 		</operation>
 	</file>
+	<file path="admin/controller/sale/order.php">
+		<operation>
+			<search><![CDATA[
+			$this->response->setOutput($this->load->view('sale/order_info', $data));
+			]]></search>
+			<add position="replace" trim="true"><![CDATA[
+				$this->load->model('extension/shipping/saferoute');
+				$data = $this->model_extension_shipping_saferoute->enrichData($data, $order_id);
+				$this->response->setOutput($this->load->view('sale/order_info', $data));
+			]]></add>
+		</operation>
+	</file>
+	<file path="admin/view/template/sale/order_info.twig">
+		<operation>
+			<search><![CDATA[
+			<td class="text-left">{{ shipping_address }}</td>
+			]]></search>
+			<add position="replace" trim="true"><![CDATA[
+				<td class="text-left">
+					{% if saferouteDeliveryType and saferouteDeliveryCompany %}
+						<b>{{ saferouteDeliveryType }} : {{ saferouteDeliveryCompany }}</b><br>
+					{% endif %}
+					{{ shipping_address }}
+				</td>
+			]]></add>
+		</operation>
+	</file>
 </modification>
