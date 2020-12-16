@@ -159,9 +159,14 @@ class ControllerExtensionModuleSaferoute extends Controller
         $data['discount'] = 0;
         if (isset($this->session->data['coupon']))
         {
+            $totals = array();
+            $taxes = $this->cart->getTaxes();
+            $total = 0;
+
             $total_data = [
                 'totals' => &$totals,
                 'total'  => &$total,
+                'taxes'  => &$taxes
             ];
 
             $total_data['total'] = $this->cart->getTotal();

@@ -2,6 +2,11 @@
 
 class ModelExtensionShippingSaferoute extends Model
 {
+
+    const PICKUP  = 1;
+    const COURIER = 2;
+    const POST    = 3;
+
     /**
      * Отправляет запрос на обновление данных заказа на сервер SafeRoute
      *
@@ -51,6 +56,13 @@ class ModelExtensionShippingSaferoute extends Model
     {
         $q = $this->db->query("SELECT shipping_code FROM `" . DB_PREFIX . "order` WHERE order_id='" . $orderId . "'");
         return $q->row['shipping_code'];
+    }
+
+    public function getDeliveryInfo($orderId)
+    {
+        $q = $this->db->query("SELECT saferoute_delivery_company, saferoute_delivery_type FROM `" . DB_PREFIX . "order` WHERE order_id='" . $orderId . "'");
+
+        return $this->mapDeliveryType($q->row['saferoute_delivery_type']) . '-' . $q->row['saferoute_delivery_company'] ?: false;
     }
 
     /**
@@ -124,14 +136,8 @@ class ModelExtensionShippingSaferoute extends Model
      * @param $orderId int|string ID заказа
      * @return boolean
      */
-//    public function onOrderCheckoutSuccess($orderId)
-    public function onOrderCheckoutSuccess($route, $data)
+    public function onOrderCheckoutSuccess($orderId)
     {
-
-        $logger = new \Log('saferoute.log');
-        $logger->write('onOrderCheckoutSuccess Event fired: ' . $route);
-        var_dump($data);die();
-
         $this->load->model('checkout/order');
 
         if (!isset($_COOKIE['SROrderData']) || !$orderId) return false;
@@ -182,6 +188,9 @@ class ModelExtensionShippingSaferoute extends Model
             // ...тип доставки
             if (isset($sr_widget_data->delivery->type))
                 $this->updateOrder($orderId, 'saferoute_delivery_type', $sr_widget_data->delivery->type);
+            // ...и юрлицо
+            if (isset($sr_widget_data->contacts->companyName))
+                $this->updateOrder($orderId, 'shipping_company', $sr_widget_data->contacts->companyName . ', ' . $sr_widget_data->contacts->companyTIN);
             // ...и название компании доставки
             if (isset($sr_widget_data->delivery->deliveryCompanyName))
                 $this->updateOrder($orderId, 'saferoute_delivery_company', $sr_widget_data->delivery->deliveryCompanyName);
@@ -205,6 +214,23 @@ class ModelExtensionShippingSaferoute extends Model
         }
 
         return false;
+    }
+
+    /**
+     * @param $code int
+     * @return string
+     */
+    public function mapDeliveryType($code)
+    {
+        $delivery_type_titles = [
+            self::PICKUP  => 'Пункт выдачи',
+            self::COURIER => 'Курьерская доставка',
+            self::POST    => 'Почта РФ',
+        ];
+
+        return (array_key_exists($code, $delivery_type_titles))
+            ? $delivery_type_titles[$code]
+            : '';
     }
 
     /**

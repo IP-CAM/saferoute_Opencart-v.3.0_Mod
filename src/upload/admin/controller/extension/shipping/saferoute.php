@@ -14,13 +14,6 @@ class ControllerExtensionShippingSaferoute extends Controller
 
         $this->load->model('setting/extension');
         $this->model_setting_extension->install('shipping', $this->request->get['extension']);
-
-        $this->load->model('setting/event');
-        $this->model_setting_event->addEvent(
-            'add_sr_data_on_order_create',
-            'catalog/model/checkout/order/addOrderHistory/before',
-            'catalog/model/extension/shipping/saferoute/onOrderCheckoutSuccess'
-        );
     }
 
     public function uninstall()
