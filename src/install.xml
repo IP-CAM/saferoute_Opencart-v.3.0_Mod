@@ -3,7 +3,7 @@
 	<name>Модуль корзинного виджета SafeRoute</name>
 	<id>SafeRouteCartWidgetModule</id>
 	<code>SafeRouteCartWidgetModule</code>
-	<version>3.1</version>
+	<version>3.1.1</version>
 	<author>Dmitry Mezentsev</author>
 	<link>https://saferoute.ru</link>
 	<file path="catalog/controller/common/header.php">
