@@ -13,19 +13,39 @@
 				]]></search>
 			<add position="before"><![CDATA[
 				$this->document->addScript('https://widgets.saferoute.ru/cart/api.js?new', 'header');
-				$this->document->addScript('catalog/view/javascript/sr-widget-init.js', 'header');
 			]]></add>
 		</operation>
 	</file>
-	<file path="catalog/controller/checkout/success.php">
+	<file path="catalog/controller/common/footer.php">
 		<operation>
 			<search><![CDATA[
-			if (isset($this->session->data['order_id'])) {
+					$data['scripts'] = $this->document->getScripts('footer');
+				]]></search>
+			<add position="before"><![CDATA[
+				$this->document->addScript('catalog/view/javascript/sr-widget-init.js', 'footer');
+			]]></add>
+		</operation>
+	</file>
+	<file path="catalog/controller/mail/order.php">
+		<operation>
+			<search><![CDATA[
+			$data['shipping_method'] = $order_info['shipping_method'];
 			]]></search>
-			<add position="after"><![CDATA[
-				if ($this->session->data['shipping_method']['code'] === "saferoute.saferoute") {
+			<add position="replace" trim="true"><![CDATA[
+			$this->load->model('extension/shipping/saferoute');
+			$data['shipping_method'] = $this->model_extension_shipping_saferoute->getDeliveryInfo($order_info['order_id']) ?: $order_info['shipping_method'];
+			]]></add>
+		</operation>
+	</file>
+	<file path="catalog/model/checkout/order.php">
+		<operation>
+			<search><![CDATA[
+			return $order_id;
+			]]></search>
+			<add position="before"><![CDATA[
+				if ($data['shipping_code'] === "saferoute.saferoute") {
 					$this->load->model('extension/shipping/saferoute');
-					$this->model_extension_shipping_saferoute->onOrderCheckoutSuccess($this->session->data['order_id']);
+					$this->model_extension_shipping_saferoute->onOrderCheckoutSuccess($order_id);
 				}
 			]]></add>
 		</operation>
@@ -38,6 +58,33 @@
 			<add position="after"><![CDATA[
 				$this->load->model('extension/shipping/saferoute');
 				if (intval($order_status_id)) $this->model_extension_shipping_saferoute->onOrderStatusUpdate($order_id, $order_status_id);
+			]]></add>
+		</operation>
+	</file>
+	<file path="admin/controller/sale/order.php">
+		<operation>
+			<search><![CDATA[
+			$this->response->setOutput($this->load->view('sale/order_info', $data));
+			]]></search>
+			<add position="replace" trim="true"><![CDATA[
+				$this->load->model('extension/shipping/saferoute');
+				$data = $this->model_extension_shipping_saferoute->enrichData($data, $order_id);
+				$this->response->setOutput($this->load->view('sale/order_info', $data));
+			]]></add>
+		</operation>
+	</file>
+	<file path="admin/view/template/sale/order_info.twig">
+		<operation>
+			<search><![CDATA[
+			<td class="text-left">{{ shipping_address }}</td>
+			]]></search>
+			<add position="replace" trim="true"><![CDATA[
+				<td class="text-left">
+					{% if saferouteDeliveryType and saferouteDeliveryCompany %}
+						<b>{{ saferouteDeliveryType }} : {{ saferouteDeliveryCompany }}</b><br>
+					{% endif %}
+					{{ shipping_address }}
+				</td>
 			]]></add>
 		</operation>
 	</file>

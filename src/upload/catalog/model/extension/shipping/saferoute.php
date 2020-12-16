@@ -2,6 +2,11 @@
 
 class ModelExtensionShippingSaferoute extends Model
 {
+
+    const PICKUP  = 1;
+    const COURIER = 2;
+    const POST    = 3;
+
     /**
      * Отправляет запрос на обновление данных заказа на сервер SafeRoute
      *
@@ -51,6 +56,13 @@ class ModelExtensionShippingSaferoute extends Model
     {
         $q = $this->db->query("SELECT shipping_code FROM `" . DB_PREFIX . "order` WHERE order_id='" . $orderId . "'");
         return $q->row['shipping_code'];
+    }
+
+    public function getDeliveryInfo($orderId)
+    {
+        $q = $this->db->query("SELECT saferoute_delivery_company, saferoute_delivery_type FROM `" . DB_PREFIX . "order` WHERE order_id='" . $orderId . "'");
+
+        return $this->mapDeliveryType($q->row['saferoute_delivery_type']) . '-' . $q->row['saferoute_delivery_company'] ?: false;
     }
 
     /**
@@ -173,6 +185,15 @@ class ModelExtensionShippingSaferoute extends Model
             // ...и телефон клиента из виджета
             if (isset($sr_widget_data->contacts->phone))
                 $this->updateOrder($orderId, 'telephone', $sr_widget_data->contacts->phone);
+            // ...тип доставки
+            if (isset($sr_widget_data->delivery->type))
+                $this->updateOrder($orderId, 'saferoute_delivery_type', $sr_widget_data->delivery->type);
+            // ...и юрлицо
+            if (isset($sr_widget_data->contacts->companyName))
+                $this->updateOrder($orderId, 'shipping_company', $sr_widget_data->contacts->companyName . ', ' . $sr_widget_data->contacts->companyTIN);
+            // ...и название компании доставки
+            if (isset($sr_widget_data->delivery->deliveryCompanyName))
+                $this->updateOrder($orderId, 'saferoute_delivery_company', $sr_widget_data->delivery->deliveryCompanyName);
         }
 
         // Получение заказа в CMS
@@ -193,6 +214,23 @@ class ModelExtensionShippingSaferoute extends Model
         }
 
         return false;
+    }
+
+    /**
+     * @param $code int
+     * @return string
+     */
+    public function mapDeliveryType($code)
+    {
+        $delivery_type_titles = [
+            self::PICKUP  => 'Пункт выдачи',
+            self::COURIER => 'Курьерская доставка',
+            self::POST    => 'Почта РФ',
+        ];
+
+        return (array_key_exists($code, $delivery_type_titles))
+            ? $delivery_type_titles[$code]
+            : '';
     }
 
     /**
@@ -271,7 +309,7 @@ class ModelExtensionShippingSaferoute extends Model
                         'cost'         => $cost,
                         'tax_class_id' => 0,
                         'saferoute'	   => 'true',
-                        'text'         => '',
+                        'text'         => "$cost ₽",
                     ],
                 ],
                 'sort_order' => $this->config->get('shipping_saferoute_sort_order'),
