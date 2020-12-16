@@ -2,7 +2,6 @@
 
 class ModelExtensionShippingSaferoute extends Model
 {
-
     const PICKUP  = 1;
     const COURIER = 2;
     const POST    = 3;
@@ -58,11 +57,19 @@ class ModelExtensionShippingSaferoute extends Model
         return $q->row['shipping_code'];
     }
 
+    /**
+     * Возвращает строку с типом доставки и названием ТК
+     *
+     * @param $orderId int|string ID заказа
+     * @return string
+     */
     public function getDeliveryInfo($orderId)
     {
-        $q = $this->db->query("SELECT saferoute_delivery_company, saferoute_delivery_type FROM `" . DB_PREFIX . "order` WHERE order_id='" . $orderId . "'");
+        $q = $this->db->query(
+            "SELECT saferoute_delivery_company, saferoute_delivery_type FROM `" . DB_PREFIX . "order` WHERE order_id='" . $orderId . "'"
+        );
 
-        return $this->mapDeliveryType($q->row['saferoute_delivery_type']) . '-' . $q->row['saferoute_delivery_company'] ?: false;
+        return $this->mapDeliveryType($q->row['saferoute_delivery_type']) . ', ' . $q->row['saferoute_delivery_company'] ?: '';
     }
 
     /**
@@ -188,9 +195,15 @@ class ModelExtensionShippingSaferoute extends Model
             // ...тип доставки
             if (isset($sr_widget_data->delivery->type))
                 $this->updateOrder($orderId, 'saferoute_delivery_type', $sr_widget_data->delivery->type);
-            // ...и юрлицо
-            if (isset($sr_widget_data->contacts->companyName))
-                $this->updateOrder($orderId, 'shipping_company', $sr_widget_data->contacts->companyName . ', ' . $sr_widget_data->contacts->companyTIN);
+            // ...и юр. лицо
+            if (isset($sr_widget_data->contacts->companyName) && isset($sr_widget_data->contacts->companyTIN)) {
+                $company = $sr_widget_data->contacts->companyName;
+
+                if ($sr_widget_data->contacts->companyTIN)
+                    $company .= ' (ИНН: ' . $sr_widget_data->contacts->companyTIN . ')';
+
+                $this->updateOrder($orderId, 'shipping_company', $company);
+            }
             // ...и название компании доставки
             if (isset($sr_widget_data->delivery->deliveryCompanyName))
                 $this->updateOrder($orderId, 'saferoute_delivery_company', $sr_widget_data->delivery->deliveryCompanyName);
