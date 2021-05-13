@@ -71,17 +71,15 @@ class ControllerExtensionModuleSaferoute extends Controller
     }
 
     /**
-     * Возвращает артикул товара
+     * Возвращает полные данные товара
      *
      * @param $id int ID товара
-     * @return string
+     * @return array
      */
-    private function getProductSku($id)
+    private function getProductData($id)
     {
         $this->load->model('catalog/product');
-        $product = $this->model_catalog_product->getProduct($id);
-
-        return isset($product['sku']) ? $product['sku'] : '';
+        return $this->model_catalog_product->getProduct($id);
     }
 
     /**
@@ -136,23 +134,32 @@ class ControllerExtensionModuleSaferoute extends Controller
         foreach ($this->cart->getProducts() as $product)
         {
             $attributes = [
-                'barcode' => '', // Штрих-код
-                'vat'     => '', // НДС
+                'barcode'          => '', // Штрих-код
+                'vat'              => '', // НДС
+                'tnved'            => '', // Код товара
+                'nameEn'           => '', // Название на англ.
+                'producingCountry' => '', // Код страны-производителя
             ];
 
             $this->getProductAttributes($product['product_id'], $attributes);
             $dimensions = $this->getProductDimensions($product);
 
+            $product_data = $this->getProductData($product['product_id']);
+
             $data['products'][] = [
-                'name'       => $product['name'],
-                'vendorCode' => $this->getProductSku($product['product_id']),
-                'barcode'    => $attributes['barcode'],
-                'vat'        => $attributes['vat'] ? (int) $attributes['vat'] : null,
-                'price'      => $product['price'],
-                'count'      => (int) $product['quantity'],
-                'width'      => $dimensions['width'],
-                'height'     => $dimensions['height'],
-                'length'     => $dimensions['length'],
+                'name'             => $product['name'],
+                'vendorCode'       => (isset($product_data['sku'])) ? $product_data['sku'] : '',
+                'brand'            => (isset($product_data['manufacturer'])) ? $product_data['manufacturer'] : '',
+                'barcode'          => $attributes['barcode'],
+                'vat'              => $attributes['vat'] ? (int) $attributes['vat'] : null,
+                'tnved'            => $attributes['tnved'],
+                'nameEn'           => $attributes['nameEn'],
+                'producingCountry' => $attributes['producingCountry'],
+                'price'            => $product['price'],
+                'count'            => (int) $product['quantity'],
+                'width'            => $dimensions['width'],
+                'height'           => $dimensions['height'],
+                'length'           => $dimensions['length'],
             ];
         }
 
