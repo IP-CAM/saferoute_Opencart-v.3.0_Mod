@@ -12,7 +12,7 @@
 					$data['scripts'] = $this->document->getScripts('header');
 				]]></search>
 			<add position="before"><![CDATA[
-				$this->document->addScript('https://widgets.saferoute.ru/cart/api.js?new', 'header');
+				$this->document->addScript('https://widgets.saferoute.ru/cart/api.js', 'header');
 			]]></add>
 		</operation>
 	</file>
